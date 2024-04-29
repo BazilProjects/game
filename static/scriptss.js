@@ -138,10 +138,20 @@ socket.onmessage = function (message) {
     }
     if ("symbol" in data) {
         symbol=data.symbol
-        // Find the button element by its class name
-        var modal = document.getElementById("exampleModal");
 
-        
+        // Array of values to compare against
+        var valuesToCheck = ['4', '5', '6', '7', '9', '10', 'K', 'Q'];
+
+        // Check if symbol is equal to any of the values
+        if (valuesToCheck.includes(symbol)) {
+            // Find the button element by its class name
+            var modal = document.getElementById("exampleModal");
+
+        } else {
+
+            // Find the button element by its class name
+            var modal = document.getElementById("exampleModal");
+        }
         // Check if the modal is currently visible
         if ($(modal).is(":visible")) {
             // Close the modal if it's visible
@@ -152,7 +162,8 @@ socket.onmessage = function (message) {
             // You can also choose to do nothing or perform some other action here
         }
         update_asked_question(data);
-    }
+
+        }
     if (data.command==="Switch_player_turn"){
         c_player=data.c_player
     }
@@ -248,13 +259,22 @@ socket.onmessage = function (message) {
         else if (Last_played_Card[1]==='Question' && !("symbol" in data)) {
             console.log(myturn,c_player);
             if (myturn==c_player){
-                console.log("Ask start")
-                // Find the button element by its class name
-                var modal = document.getElementById("exampleModal");
+                if (Last_played_Card[0]==='AS') {
+                    // Find the button element by its class name
+                    var modal = document.getElementById("exampleModal_AS");
 
-                // Show the modal
-                $(modal).modal("show");
-                Update_images(data,imageName);
+                    // Show the modal
+                    $(modal).modal("show");
+                    Update_images(data,imageName);
+                } else {
+                    // Find the button element by its class name
+                    var modal = document.getElementById("exampleModal");
+
+                    // Show the modal
+                    $(modal).modal("show");
+                    Update_images(data,imageName);
+                }
+                
             }
         }
         
@@ -517,6 +537,9 @@ window.onload = function() {
 
 
 function game_rules(Last_played_Card, Next_played_Card) {
+    if (Last_played_Card!==null && Next_played_Card[0]==="AS" && ){
+
+    }
     if (Last_played_Card!==null && symbol !==null){
         //diamond
         if (symbol==='diamond' && (['D'].includes(Next_played_Card[0]) || Next_played_Card[0] === 'RED_Joker')) {
@@ -659,6 +682,7 @@ function game_rules(Last_played_Card, Next_played_Card) {
 
             // Check the result
             if (Next_played_Card[1] == 'Question') {
+
                 Last_played_Card = Next_played_Card;
 
                 const data = {
@@ -668,6 +692,8 @@ function game_rules(Last_played_Card, Next_played_Card) {
                 };
                 socket.send(JSON.stringify(data));
                 return true;
+                
+                
             } else if (Next_played_Card[1] == "Pick_2") {
                 Last_played_Card = Next_played_Card;
 

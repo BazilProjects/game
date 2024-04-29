@@ -9,7 +9,7 @@ https://docs.djangoproject.com/en/3.2/topics/settings/
 For the full list of settings and their values, see
 https://docs.djangoproject.com/en/3.2/ref/settings/
 """
-
+#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
 from pathlib import Path
 import os
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
