@@ -419,7 +419,6 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         if 'Last_played_Card' in content:
             Last_played_Card=content['Last_played_Card']
-        if Last_played_Card[0]=="AS" and content['sub_command']
         if 'sub_command' in content and content['sub_command']== 'Switch_player_turn':
             print('entered Switch_player_turn')
             c_player=await self.turn_management_system()
