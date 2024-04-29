@@ -537,9 +537,6 @@ window.onload = function() {
 
 
 function game_rules(Last_played_Card, Next_played_Card) {
-    if (Last_played_Card!==null && Next_played_Card[0]==="AS" && ){
-
-    }
     if (Last_played_Card!==null && symbol !==null){
         //diamond
         if (symbol==='diamond' && (['D'].includes(Next_played_Card[0]) || Next_played_Card[0] === 'RED_Joker')) {
