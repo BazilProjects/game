@@ -1,0 +1,6 @@
+Django
+python-chess
+daphne
+channels
+gunicorn
+uvicorn
