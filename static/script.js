@@ -1,6 +1,22 @@
+/*
 var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
  
-var ws_path = ws_scheme + '://' + window.location.host + "/game/" + 1
+var ws_path = ws_scheme + '://' + window.location.host + "/game/" + links
+*/
+
+// Get the pathname from the URL
+var pathname = window.location.pathname;
+
+// Extract the last segment after the last slash
+// Extract the segment after the last slash
+var gameId = pathname.split('/').filter(Boolean).pop();
+
+// Now you can use gameId to construct your WebSocket path
+var ws_scheme = window.location.protocol == "https:" ? "wss" : "ws";
+var ws_path = ws_scheme + '://' + window.location.host + "/game/" + gameId;
+
+// Use ws_path for WebSocket connection
+console.log(ws_path);  // Example: "wss://game-k0m7.onrender.com/game/1"
 
 
 if (Last_played_Card != null) {

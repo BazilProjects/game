@@ -1,0 +1,29 @@
+{% extends "base.html" %}
+
+{% block body %}
+    <h1>Games</h1>
+    <table>
+        <tr>
+            <th>Game ID</th>
+            <th>Owner</th>
+            <th>Opponent</th>
+            <th>Actions</th>
+        </tr>
+        {% for game in games %}
+            <tr>
+                <td>{{ game.id }}</td>
+                <td>{{ game.owner.username }}</td>
+                <td>{{ game.opponent.username}}</td>
+                <td>
+                    <a href="{% url 'play_game' id=game.id %}">
+                        <button>Play</button>
+                    </a>
+                </td>
+            </tr>
+        {% empty %}
+            <tr>
+                <td colspan="4">No games available</td>
+            </tr>
+        {% endfor %}
+    </table>
+{% endblock %}
