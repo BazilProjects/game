@@ -25,7 +25,7 @@ SECRET_KEY = 'django-insecure-zfec2bj11ga+g5w)wu=ewwacj8#(#y@&s)3x2%i20a$6d4&e)i
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['game-k0m7.onrender.com',"*"]
+ALLOWED_HOSTS = ["https://game-k0m7.onrender.com/","*"]
 
 
 # Application definition
@@ -120,7 +120,7 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/3.2/howto/static-files/
 
-STATIC_URL = '/staticxxx/'
+STATIC_URL = '/static/'
 
 # Absolute path to the directory where static files will be collected for deployment.
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
