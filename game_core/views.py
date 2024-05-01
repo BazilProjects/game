@@ -4,6 +4,8 @@ from .forms import GameForm
 from django.http import HttpResponse
 
 def games(request):
+    if request.user.is_anonymous:
+        return redirect(reverse_lazy('admin'))
     games=Game.objects.all()
     context={'games':games}
     return render(request, 'games.html',context)

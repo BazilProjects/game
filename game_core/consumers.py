@@ -816,18 +816,16 @@ class GameConsumer(AsyncWebsocketConsumer):
     def update(self):
         game = Game.objects.all().filter(id=self.game_id)[0]
         if not game:
-            print("Game not found")
             return
 
         game.save()
-        print("Saving game details")
+
     @database_sync_to_async
     def turn_management_system(self):
-        print("Turn made 1")
+    
         game = Game.objects.all().filter(id=self.game_id)[0]
-        print("Game object:", game)
         player = game.c_player
-        print("Current player:", player)
+
         if int(player)==1:
             players = -1
         else:
@@ -906,19 +904,15 @@ class GameConsumer(AsyncWebsocketConsumer):
         game = Game.objects.all().filter(id=self.game_id)[0]
         owner_cards =json.loads(game.owner_cards.replace("'", '"'))
         opponent_cards = json.loads(game.opponent_cards.replace("'", '"'))
-        print('possible_counter 8888')
         return owner_cards, opponent_cards
 
     async def counter_is_possible_function(self,card, myturn, opponent_cards, owner_cards):
-        print('------------------------------------')
         myturn=int(myturn)
-        print(myturn)
+
         if myturn == -1:
             opponent_CARDS =opponent_cards
-            print('------------------------------------')
 
         elif myturn == 1:
-            print('------------------------------------1')
 
             opponent_CARDS = owner_cards
 
@@ -968,18 +962,18 @@ class GameConsumer(AsyncWebsocketConsumer):
         return None  # Return None if no matching key-value pair is found
     @database_sync_to_async
     def current_each_player_cards(self,Last_played_Card):
-        print('------------------------------------')
+        
         game = Game.objects.get(id=self.game_id)
-        print('------------------------------------')
+        
         player_turn=int(game.c_player)
-        print('------------------------------------')
+        
         
         
         if player_turn == -1:
             opponent_cards=game.opponent_cards
-            print('-----------OPP-------------------------')
+
             print(type(opponent_cards))
-            print('------------------------------------')
+            
 
 
         elif player_turn == 1:
