@@ -2,10 +2,11 @@ from django.shortcuts import render,redirect
 from .models import *
 from .forms import GameForm
 from django.http import HttpResponse
+from django.urls import reverse_lazy
 
 def games(request):
     if request.user.is_anonymous:
-        return redirect(reverse_lazy('admin'))
+        return redirect(reverse_lazy('admin:index'))
     games=Game.objects.all()
     context={'games':games}
     return render(request, 'games.html',context)
