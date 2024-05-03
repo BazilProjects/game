@@ -601,7 +601,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                 print('*****************************************')
                 print(owner_cards,opponent_cards)
                 print('*****************************************')
-                c_player=await self.turn_management_system()
+                c_player=await self.check_c_player()#turn_management_system()
                 message = {
                 
                     "command":"card-played",
@@ -928,16 +928,16 @@ class GameConsumer(AsyncWebsocketConsumer):
     def pick_cards(self, count,Last_played_Card):
         print('count    :*****************',count)
         game = Game.objects.all().filter(id=self.game_id)[0]
-
-
+        print(Last_played_Card)
         if int(game.c_player) == -1:
             print('possible_counter 1111')
             print(type(game.opponent_cards))
-            print(game.opponent_cards)
-            opponent_cards=json.loads((game.opponent_cards.replace("'", '"')))
+            print(json.loads(str(game.opponent_cards).replace("'", '"')))
+            opponent_cards=json.loads(str(game.opponent_cards).replace("'", '"'))
             del opponent_cards[Last_played_Card[0]]
             game.opponent_cards=opponent_cards
-            current_cards = json.loads(game.owner_cards)
+            print('lllllll')
+            current_cards = json.loads(game.owner_cards.replace("'", '"'))
             print('current_cards:', current_cards)  # Print current_cards variable
             Cards_deck_play = json.loads(game.Cards_deck_play)
             print('Cards_deck_play:', Cards_deck_play)  # Print Cards_deck_play variable
