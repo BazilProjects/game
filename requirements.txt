@@ -1,6 +1,6 @@
-Django
-python-chess
+gunicorn
+django
 daphne
 channels
-gunicorn
-uvicorn[standard]
+
+

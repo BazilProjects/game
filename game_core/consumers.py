@@ -193,6 +193,9 @@ class GameConsumer(AsyncWebsocketConsumer):
             await self.game_over(result)
  
         try:
+            if command=="player_cards":
+                print('Y'*50)
+                await self.save_player_cards(content)
             if command == "start-game":
                 await self.start_game()
             elif command == "game-over":
@@ -210,7 +213,19 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         except:
             pass
-
+    async def save_player_cards(self, content):
+        owner_cards=content['owner_cards']
+        opponent_cards=content['opponent_cards']
+        print("own"*4)
+        print("opp"*5)
+        game_save=await self.saving_player_cards(owner_cards,opponent_cards)
+        print('Player cards saved')
+    @database_sync_to_async
+    def saving_player_cards(self, owner_cards,opponent_cards):
+        game = Game.objects.get(id=self.game_id)
+        game.opponent_cards=opponent_cards
+        game.owner_cards=owner_cards
+        game.save()
 
     @database_sync_to_async
     def get_owner_opponent_usernames(self):
@@ -416,9 +431,11 @@ class GameConsumer(AsyncWebsocketConsumer):
     
     async def card_played(self, content):
         print('Card played entered')
-
         if 'Last_played_Card' in content:
             Last_played_Card=content['Last_played_Card']
+            print(Last_played_Card)
+        
+
         if 'sub_command' in content and content['sub_command']== 'Switch_player_turn':
             print('entered Switch_player_turn')
             c_player=await self.turn_management_system()
@@ -459,10 +476,69 @@ class GameConsumer(AsyncWebsocketConsumer):
                     'message': message
                 }
             )
+        if 'make_player_turn' in content:
+            print('make_player_turn')
+            if content['make_player_turn']==False:
+                print('False')
+                if 'J' in Last_played_Card[0]:
+                    print('J')
+                    c_player=await self.check_c_player()
+                    message = {
+                    
+                        "command":"card-played",
+                        "Last_played_Card":Last_played_Card,
+                        "c_player":c_player,
+
+                    }
+                    
+
+                    await self.channel_layer.group_send(
+                        self.room_group_name,
+                        {
+                            'type': 'chat.message',
+                            'message': message
+                        }
+                    )
+                if '8' in Last_played_Card[0]:
+                    c_player=await self.check_c_player()
+                    message = {
+                    
+                        "command":"card-played",
+                        "Last_played_Card":Last_played_Card,
+                        "c_player":c_player,
+
+                    }
+                    
+
+                    await self.channel_layer.group_send(
+                        self.room_group_name,
+                        {
+                            'type': 'chat.message',
+                            'message': message
+                        }
+                    )
+            else:
+                c_player=await self.check_c_player()
+                message = {
+                
+                    "command":"card-played",
+                    "Last_played_Card":Last_played_Card,
+                    "c_player":c_player,
+
+                }
+                
+
+                await self.channel_layer.group_send(
+                    self.room_group_name,
+                    {
+                        'type': 'chat.message',
+                        'message': message
+                    }
+                )
 
         if Last_played_Card[1]=="Pick_2":
-            
-            if not content["possible_counter"]:
+            print('Pick_2 222')
+            if 'possible_counter' not  in content:
                 print('possible_counter 3333')
                 owner_cards,opponent_cards= await self.pick_cards(2,Last_played_Card)
 
@@ -515,6 +591,7 @@ class GameConsumer(AsyncWebsocketConsumer):
                         'message': message
                     }
                 )
+                print('done')
         if Last_played_Card[1]=="Pick_3":
             print('PIck 3333')
             if "possible_counter" not in content.values():
@@ -816,16 +893,18 @@ class GameConsumer(AsyncWebsocketConsumer):
     def update(self):
         game = Game.objects.all().filter(id=self.game_id)[0]
         if not game:
+            print("Game not found")
             return
 
         game.save()
-
+        print("Saving game details")
     @database_sync_to_async
     def turn_management_system(self):
-    
+        print("Turn made 1")
         game = Game.objects.all().filter(id=self.game_id)[0]
+        print("Game object:", game)
         player = game.c_player
-
+        print("Current player:", player)
         if int(player)==1:
             players = -1
         else:
@@ -853,7 +932,9 @@ class GameConsumer(AsyncWebsocketConsumer):
 
         if int(game.c_player) == -1:
             print('possible_counter 1111')
-            opponent_cards=json.loads(game.opponent_cards.replace("'", '"'))
+            print(type(game.opponent_cards))
+            print(game.opponent_cards)
+            opponent_cards=json.loads((game.opponent_cards.replace("'", '"')))
             del opponent_cards[Last_played_Card[0]]
             game.opponent_cards=opponent_cards
             current_cards = json.loads(game.owner_cards)
@@ -904,15 +985,19 @@ class GameConsumer(AsyncWebsocketConsumer):
         game = Game.objects.all().filter(id=self.game_id)[0]
         owner_cards =json.loads(game.owner_cards.replace("'", '"'))
         opponent_cards = json.loads(game.opponent_cards.replace("'", '"'))
+        print('possible_counter 8888')
         return owner_cards, opponent_cards
 
     async def counter_is_possible_function(self,card, myturn, opponent_cards, owner_cards):
+        print('------------------------------------')
         myturn=int(myturn)
-
+        print(myturn)
         if myturn == -1:
             opponent_CARDS =opponent_cards
+            print('------------------------------------')
 
         elif myturn == 1:
+            print('------------------------------------1')
 
             opponent_CARDS = owner_cards
 
@@ -962,18 +1047,18 @@ class GameConsumer(AsyncWebsocketConsumer):
         return None  # Return None if no matching key-value pair is found
     @database_sync_to_async
     def current_each_player_cards(self,Last_played_Card):
-        
+        print('------------------------------------')
         game = Game.objects.get(id=self.game_id)
-        
+        print('------------------------------------')
         player_turn=int(game.c_player)
-        
+        print('------------------------------------')
         
         
         if player_turn == -1:
             opponent_cards=game.opponent_cards
-
+            print('-----------OPP-------------------------')
             print(type(opponent_cards))
-            
+            print('------------------------------------')
 
 
         elif player_turn == 1:

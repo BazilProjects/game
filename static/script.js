@@ -19,11 +19,10 @@ var ws_path = ws_scheme + '://' + window.location.host + "/game/" + gameId;
 console.log(ws_path);  // Example: "wss://game-k0m7.onrender.com/game/1"
 
 
-if (Last_played_Card != null) {
+if (typeof Last_played_Card !== 'undefined') {
     // This block of code will execute if Last_played_Card is not null
     Last_played_Card = null; // This sets the outer Last_played_Card to null
 }
-
 
 var symbol=null
 
@@ -393,6 +392,15 @@ socket.onmessage = function (message) {
                     createImages("upper-row", upperRowImages,'owner');
 
                     console.log("Deleted from owner_cards");
+            // Prepare data object
+            const data = {
+                command: "player_cards",
+                owner_cards: owner_cards,
+                opponent_cards:opponent_cards,
+            };
+
+            // Send data over WebSocket connection
+            socket.send(JSON.stringify(data));
                     // No need to continue searching after deletion, so break out of the loop
                     break;
                 }
@@ -470,6 +478,15 @@ socket.onmessage = function (message) {
                     createImages("lower-row", lowerRowImages,'opponent');
 
                     console.log("Deleted from opponent_cards");
+            // Prepare data object
+            const data = {
+                command: "player_cards",
+                owner_cards: owner_cards,
+                opponent_cards:opponent_cards,
+            };
+
+            // Send data over WebSocket connection
+            socket.send(JSON.stringify(data));
                     // No need to continue searching after deletion, so break out of the loop
                     break;
                 }
@@ -553,6 +570,7 @@ window.onload = function() {
 
 
 function game_rules(Last_played_Card, Next_played_Card) {
+
     if (Last_played_Card!==null && symbol !==null){
         //diamond
         if (symbol==='diamond' && (['D'].includes(Next_played_Card[0]) || Next_played_Card[0] === 'RED_Joker')) {
@@ -753,7 +771,8 @@ function game_rules(Last_played_Card, Next_played_Card) {
                 const data = {
                     command: "card-played",
                     sub_command: "Add_Top",
-                    Last_played_Card: Last_played_Card
+                    Last_played_Card: Last_played_Card,
+                    make_player_turn:false
                 };
                 socket.send(JSON.stringify(data));
                 return true;
@@ -890,7 +909,7 @@ function game_rules(Last_played_Card, Next_played_Card) {
                 }
         }
 
-        if (Last_played_Card[0].includes('H') && Last_played_Card[1] === 'Ignore') {
+        if (Last_played_Card[0].includes('H')) {//} && Last_played_Card[1] === 'Ignore') {
             const lettersToCheck = ['4', '5', '6', '9', '10', 'Q', 'K'];
 
             // Check if any of the letters appear in the string
@@ -913,11 +932,7 @@ function game_rules(Last_played_Card, Next_played_Card) {
 
                 return true;
             }
-        }else if (Last_played_Card[0].includes('H') && Last_played_Card[1] !== 'Ignore') {
 
-            if (Next_played_Card[1] === 'Question') {
-                console.log('i chose what to ask for Card type(h,s,f,d)');
-            }
             if (Next_played_Card[1] === 'Pick_2') {
                 counter = counter_is_possible_function(Next_played_Card);
                 console.log('***********************************');
@@ -996,93 +1011,124 @@ function game_rules(Last_played_Card, Next_played_Card) {
                     return true;
                 }
             }
-            if (Last_played_Card[1] === 'Add_Top') {
-                console.log('Add another Card');
-                if (Last_played_Card[0].includes('J')) {
-                    if (Next_played_Card[0].includes('J')) {
-                        // Update Last_played_Card
-                        Last_played_Card = Next_played_Card;
+            if (Next_played_Card[1] === 'Add_Top') {
+                if (Last_played_Card[1]=== 'Add_Top') {
+                    if (Last_played_Card[0].includes('J')) {
+                        if (Next_played_Card[0].includes('J')) {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
 
-                        // Prepare data object
-                        const data = {
-                            command: "card-played",
-                            Last_played_Card: Last_played_Card,
-                            make_player_turn:false,
-                        };
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:false,
+                            };
 
-                        // Send data over WebSocket connection
-                        socket.send(JSON.stringify(data));
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
 
-                        return true;
+                            return true;
+                        }
+                        else if (Next_played_Card[0] === '8H') {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:false,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        } else if (Next_played_Card[0].includes('H')) {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:true,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        }
                     }
-                    else if (Next_played_Card[0] === '8H') {
-                        // Update Last_played_Card
-                        Last_played_Card = Next_played_Card;
+                    if (Last_played_Card[0].includes('8')) {
+                        if (Next_played_Card[0].includes('8')) {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
 
-                        // Prepare data object
-                        const data = {
-                            command: "card-played",
-                            Last_played_Card: Last_played_Card,
-                            make_player_turn:false,
-                        };
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:false,
+                            };
 
-                        // Send data over WebSocket connection
-                        socket.send(JSON.stringify(data));
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
 
-                        return true;
-                    } else if (Next_played_Card[0].includes('H')) {
-                        // Update Last_played_Card
-                        Last_played_Card = Next_played_Card;
+                            return true;
+                        }
+                        else if (Next_played_Card[0] === 'JH') {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
 
-                        // Prepare data object
-                        const data = {
-                            command: "card-played",
-                            Last_played_Card: Last_played_Card,
-                            make_player_turn:true,
-                        };
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:false,
+                            };
 
-                        // Send data over WebSocket connection
-                        socket.send(JSON.stringify(data));
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
 
-                        return true;
+                            return true;
+                        } else if (Next_played_Card[0].includes('H') ) {
+                            // pass
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:true,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        }
                     }
+                } else {
+                    // Update Last_played_Card
+                    Last_played_Card = Next_played_Card;
+
+                    // Prepare data object
+                    const data = {
+                        command: "card-played",
+                        Last_played_Card: Last_played_Card,
+                        make_player_turn:true,
+                    };
+
+                    // Send data over WebSocket connection
+                    socket.send(JSON.stringify(data));
+
+                    return true;
                 }
-                if (Last_played_Card[0] === '8') {
-                    if (Next_played_Card[0].includes('8')) {
-                        // Update Last_played_Card
-                        Last_played_Card = Next_played_Card;
 
-                        // Prepare data object
-                        const data = {
-                            command: "card-played",
-                            Last_played_Card: Last_played_Card,
-                            make_player_turn:false,
-                        };
-
-                        // Send data over WebSocket connection
-                        socket.send(JSON.stringify(data));
-
-                        return true;
-                    }
-                    else if (Next_played_Card[0].includes('H') && Next_played_Card[0].includes('J')) {
-                        // Update Last_played_Card
-                        Last_played_Card = Next_played_Card;
-
-                        // Prepare data object
-                        const data = {
-                            command: "card-played",
-                            Last_played_Card: Last_played_Card,
-                            make_player_turn:false,
-                        };
-
-                        // Send data over WebSocket connection
-                        socket.send(JSON.stringify(data));
-
-                        return true;
-                    } else if (Next_played_Card[0].includes('H') ) {
-                        // pass
-                    }
-                }
             }
 
         }
@@ -1140,7 +1186,7 @@ function game_rules(Last_played_Card, Next_played_Card) {
         }
 
         // Diamond
-        if (Last_played_Card[0].includes('D') && Last_played_Card[1] === 'Ignore') {
+        if (Last_played_Card[0].includes('D') ) {//&& Last_played_Card[1] === 'Ignore') {
             const lettersToCheck = ['4', '5', '6', '7','9', '10', 'Q', 'K'];
 
             // Check if any of the letters appear in the string
@@ -1163,10 +1209,7 @@ function game_rules(Last_played_Card, Next_played_Card) {
 
                 return true;
             }
-            /*
-            if (Next_played_Card[1] === 'Question') {
-                console.log('i chose what to ask for Card type(h,s,f,d');
-            }*/
+
             if (Next_played_Card[1] === 'Pick_2') {
 
                 counter=counter_is_possible_function(Next_played_Card)
@@ -1208,59 +1251,168 @@ function game_rules(Last_played_Card, Next_played_Card) {
                 }
                 
             if (Next_played_Card[1] === 'Pick_3') {
-                counter=counter_is_possible_function(Next_played_Card)
-                if (counter.length!==0) {
+                counter = counter_is_possible_function(Next_played_Card);
+                console.log('***********************************');
+                console.log(counter);
+                console.log('***********************************');
+                if (counter.length !== 0) {
                     console.log('Send message to the opponent to counter or pick 5');
-                    if (pick) {
-                        console.log('Randomly give him 5');
-                    }
-                    if (counter) {
-                        if (counter === 'Pick_2') {
-                            console.log('randomly give him 1');
-                        }
-                        if (counter === 'Pick_3') {
-                            console.log('opponent picks 3');
-                        }
-                        if (counter === 'Pick_5_red') {
-                            console.log('give opponent red joker');
-                        }
-                        if (counter === 'Pick_5_black') {
-                            console.log('give opponent black joker');
-                        }
-                    }
-                }
-                console.log('Server 3 random picks from Cards_deck_play to Next player then play again');
-            }
-            if (Last_played_Card[1] === 'Add_Top') {
-                console.log('Add another Card');
-                if (Last_played_Card[0].includes('J')) {
-                    if (Next_played_Card[0].includes('J')) {
-                        // pass
-                    }
-                    if (Next_played_Card[0] === '8D') {
-                        // pass
-                    } else if (Next_played_Card[0].includes('D')) {
-                        // pass
-                    }
-                }
-                if (Last_played_Card[0] === '8') {
-                    if (Next_played_Card[0] === '8') {
-                        // pass
-                    }
-                    if (Next_played_Card[0] === 'jD') {
-                        // pass
-                    } else if (Next_played_Card[0].includes('D')) {
-                        // pass
-                    }
+                    Last_played_Card = Next_played_Card;
+
+                    // Prepare data object
+                    const data = {
+                        command: "card-played",
+                        Last_played_Card: Last_played_Card,
+                        sub_command: "Pick_3",
+                        possible_counter: counter
+                    };
+
+                    // Send data over WebSocket connection
+                    socket.send(JSON.stringify(data));
+
+                    return true;
+                } else {
+                    Last_played_Card = Next_played_Card;
+
+                    // Prepare data object
+                    const data = {
+                        command: "card-played",
+                        Last_played_Card: Last_played_Card,
+                        sub_command: "Pick_3",
+                        possible_counter: counter
+                    };
+
+                    // Send data over WebSocket connection
+                    socket.send(JSON.stringify(data));
+
+                    return true;
                 }
             }
-            if (Last_played_Card[1] === 'End_game') {
-                console.log("Game Ended");
+            if (Next_played_Card[1] === 'Add_Top') {
+                if (Last_played_Card[1]=== 'Add_Top') {
+                    if (Last_played_Card[0].includes('J')) {
+                        if (Next_played_Card[0].includes('J')) {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:false,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        }
+                        else if (Next_played_Card[0] === '8D') {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:false,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        } else if (Next_played_Card[0].includes('D')) {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:true,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        }
+                    }
+                    if (Last_played_Card[0].includes('8')) {
+                        if (Next_played_Card[0].includes('8')) {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:false,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        }
+                        else if (Next_played_Card[0] === 'JD') {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:false,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        } else if (Next_played_Card[0].includes('D') ) {
+                            // pass
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:true,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        }
+                    }
+                } else {
+                    // pass
+                    // Update Last_played_Card
+                    Last_played_Card = Next_played_Card;
+
+                    // Prepare data object
+                    const data = {
+                        command: "card-played",
+                        Last_played_Card: Last_played_Card,
+                        make_player_turn:true,
+                    };
+
+                    // Send data over WebSocket connection
+                    socket.send(JSON.stringify(data));
+
+                    return true;
+                }
+
             }
+
         }
 
         // Flower
-        if (Last_played_Card[0].includes('F') && Last_played_Card[1] === 'Ignore') {
+        if (Last_played_Card[0].includes('F') ) {//&& Last_played_Card[1] === 'Ignore') {
             const lettersToCheck = ['4', '5', '6', '7','9', '10', 'Q', 'K'];
 
             // Check if any of the letters appear in the string
@@ -1283,10 +1435,7 @@ function game_rules(Last_played_Card, Next_played_Card) {
 
                 return true;
             }
-            /*
-            if (Last_played_Card[1] === 'Question') {
-                console.log('i chose what to ask for Card type(h,s,f,d');
-            }*/
+
             if (Next_played_Card[1] === 'Pick_2') {
 
                 counter=counter_is_possible_function(Next_played_Card)
@@ -1327,60 +1476,168 @@ function game_rules(Last_played_Card, Next_played_Card) {
                     }
                 }
                 
-            if (Last_played_Card[1] === 'Pick_3') {
-                counter=counter_is_possible_function(Next_played_Card)
-                if (counter.length!==0) {
+            if (Next_played_Card[1] === 'Pick_3') {
+                counter = counter_is_possible_function(Next_played_Card);
+                console.log('***********************************');
+                console.log(counter);
+                console.log('***********************************');
+                if (counter.length !== 0) {
                     console.log('Send message to the opponent to counter or pick 5');
-                    if (pick) {
-                        console.log('Randomly give him 5');
-                    }
-                    if (counter) {
-                        if (counter === 'Pick_2') {
-                            console.log('randomly give him 1');
-                        }
-                        if (counter === 'Pick_3') {
-                            console.log('opponent picks 3');
-                        }
-                        if (counter === 'Pick_5_red') {
-                            console.log('give opponent red joker');
-                        }
-                        if (counter === 'Pick_5_black') {
-                            console.log('give opponent black joker');
-                        }
-                    }
-                }
-                console.log('Server 3 random picks from Cards_deck_play to Next player then play again');
-            }
-            if (Last_played_Card[1] === 'Add_Top') {
-                console.log('Add another Card');
-                if (Last_played_Card[0].includes('J')) {
-                    if (Next_played_Card[0].includes('J')) {
-                        // pass
-                    }
-                    if (Next_played_Card[0] === '8F') {
-                        // pass
-                    } else if (Next_played_Card[0].includes('F')) {
-                        // pass
-                    }
-                }
-                if (Last_played_Card[0] === '8') {
-                    if (Next_played_Card[0] === '8') {
-                        // pass
-                    }
-                    if (Next_played_Card[0] === 'jF') {
-                        // pass
-                    } else if (Next_played_Card[0].includes('F')) {
-                        // pass
-                    }
+                    Last_played_Card = Next_played_Card;
+
+                    // Prepare data object
+                    const data = {
+                        command: "card-played",
+                        Last_played_Card: Last_played_Card,
+                        sub_command: "Pick_3",
+                        possible_counter: counter
+                    };
+
+                    // Send data over WebSocket connection
+                    socket.send(JSON.stringify(data));
+
+                    return true;
+                } else {
+                    Last_played_Card = Next_played_Card;
+
+                    // Prepare data object
+                    const data = {
+                        command: "card-played",
+                        Last_played_Card: Last_played_Card,
+                        sub_command: "Pick_3",
+                        possible_counter: counter
+                    };
+
+                    // Send data over WebSocket connection
+                    socket.send(JSON.stringify(data));
+
+                    return true;
                 }
             }
-            if (Last_played_Card[1] === 'End_game') {
-                console.log("Game Ended");
+            if (Next_played_Card[1] === 'Add_Top') {
+                if (Last_played_Card[1]=== 'Add_Top') {
+                    if (Last_played_Card[0].includes('J')) {
+                        if (Next_played_Card[0].includes('J')) {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:false,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        }
+                        else if (Next_played_Card[0] === '8F') {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:false,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        } else if (Next_played_Card[0].includes('F')) {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:true,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        }
+                    }
+                    if (Last_played_Card[0].includes('8')) {
+                        if (Next_played_Card[0].includes('8')) {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:false,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        }
+                        else if (Next_played_Card[0] === 'JF') {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:false,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        } else if (Next_played_Card[0].includes('F') ) {
+                            // pass
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:true,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        }
+                    }
+                } else {
+                    // Update Last_played_Card
+                    Last_played_Card = Next_played_Card;
+
+                    // Prepare data object
+                    const data = {
+                        command: "card-played",
+                        Last_played_Card: Last_played_Card,
+                        make_player_turn:true,
+                    };
+
+                    // Send data over WebSocket connection
+                    socket.send(JSON.stringify(data));
+
+                    return true;
+                }
+
             }
+
         }
 
         // SPADE
-        if (Last_played_Card[0].includes('S') && Last_played_Card[1] === 'Ignore') {
+        if (Last_played_Card[0].includes('S')) {//&& Last_played_Card[1] === 'Ignore') {
             console.log('SPades played ')
             const lettersToCheck = ['4', '5','7','6', '9', '10', 'Q', 'K'];
 
@@ -1404,10 +1661,7 @@ function game_rules(Last_played_Card, Next_played_Card) {
 
                 return true;
             }
-            /*
-            if (Next_played_Card[1] === 'Question') {
-                console.log('i chose what to ask for Card type(h,s,f,d');
-            }*/
+
             if (Next_played_Card[1] === 'Pick_2') {
 
                 counter=counter_is_possible_function(Next_played_Card)
@@ -1486,31 +1740,124 @@ function game_rules(Last_played_Card, Next_played_Card) {
                     return true;
                     }
             }
-            if (Last_played_Card[1] === 'Add_Top') {
-                console.log('Add another Card');
-                if (Last_played_Card[0].includes('J')) {
-                    if (Next_played_Card[0].includes('J')) {
-                        // pass
+            if (Next_played_Card[1] === 'Add_Top') {
+                if (Last_played_Card[1]=== 'Add_Top') {
+                    if (Last_played_Card[0].includes('J')) {
+                        if (Next_played_Card[0].includes('J')) {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:false,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        }
+                        else if (Next_played_Card[0] === '8S') {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:false,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        } else if (Next_played_Card[0].includes('S')) {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:true,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        }
                     }
-                    if (Next_played_Card[0] === '8S') {
-                        // pass
-                    } else if (Next_played_Card[0].includes('S')) {
-                        // pass
+                    if (Last_played_Card[0].includes('8')) {
+                        if (Next_played_Card[0].includes('8')) {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:false,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        }
+                        else if (Next_played_Card[0] === 'JS') {
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:false,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        } else if (Next_played_Card[0].includes('S') ) {
+                            // pass
+                            // Update Last_played_Card
+                            Last_played_Card = Next_played_Card;
+
+                            // Prepare data object
+                            const data = {
+                                command: "card-played",
+                                Last_played_Card: Last_played_Card,
+                                make_player_turn:true,
+                            };
+
+                            // Send data over WebSocket connection
+                            socket.send(JSON.stringify(data));
+
+                            return true;
+                        }
                     }
+                } else {
+                    // Update Last_played_Card
+                    Last_played_Card = Next_played_Card;
+
+                    // Prepare data object
+                    const data = {
+                        command: "card-played",
+                        Last_played_Card: Last_played_Card,
+                        make_player_turn:true,
+                    };
+
+                    // Send data over WebSocket connection
+                    socket.send(JSON.stringify(data));
+
+                    return true;
                 }
-                if (Last_played_Card[0] === '8') {
-                    if (Next_played_Card[0] === '8') {
-                        // pass
-                    }
-                    if (Next_played_Card[0] === 'jS') {
-                        // pass
-                    } else if (Next_played_Card[0].includes('S')) {
-                        // pass
-                    }
-                }
-            }
-            if (Last_played_Card[1] === 'End_game') {
-                console.log("Game Ended");
+
             }
         }
     }
@@ -1619,6 +1966,15 @@ function Update_images(data,imageName) {
             createImages("upper-row", upperRowImages,'owner');
 
             console.log("Deleted from owner_cards");
+            // Prepare data object
+            const data = {
+                command: "player_cards",
+                owner_cards: owner_cards,
+                opponent_cards:opponent_cards,
+            };
+
+            // Send data over WebSocket connection
+            socket.send(JSON.stringify(data));
             // No need to continue searching after deletion, so break out of the loop
             break;
         }
@@ -1697,6 +2053,15 @@ function Update_images(data,imageName) {
             createImages("lower-row", lowerRowImages,'opponent');
 
             console.log("Deleted from opponent_cards");
+            // Prepare data object
+            const data = {
+                command: "player_cards",
+                owner_cards: owner_cards,
+                opponent_cards:opponent_cards,
+            };
+
+            // Send data over WebSocket connection
+            socket.send(JSON.stringify(data));
             // No need to continue searching after deletion, so break out of the loop
             break;
         }
@@ -1866,7 +2231,7 @@ function attachImagesToModal(cardArray) {
     var img = document.createElement("img");
     
     // Set the src attribute of the image
-    img.src = "static/img/" + card + ".png"; // Assuming image paths are constructed this way
+    img.src = "/static/img/" + card + ".png"; // Assuming image paths are constructed this way
     
     // Set the alt attribute of the image
     img.alt = card;
@@ -2013,6 +2378,15 @@ function update_last_played_card(data) {
             createImages("upper-row", upperRowImages,'owner');
 
             console.log("Deleted from owner_cards");
+            // Prepare data object
+            const data = {
+                command: "player_cards",
+                owner_cards: owner_cards,
+                opponent_cards:opponent_cards,
+            };
+
+            // Send data over WebSocket connection
+            socket.send(JSON.stringify(data));
             // No need to continue searching after deletion, so break out of the loop
             break;
         }
@@ -2090,6 +2464,15 @@ function update_last_played_card(data) {
             createImages("lower-row", lowerRowImages,'opponent');
 
             console.log("Deleted from opponent_cards");
+            // Prepare data object
+            const data = {
+                command: "player_cards",
+                owner_cards: owner_cards,
+                opponent_cards:opponent_cards,
+            };
+
+            // Send data over WebSocket connection
+            socket.send(JSON.stringify(data));
             // No need to continue searching after deletion, so break out of the loop
             break;
         }

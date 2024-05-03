@@ -5,9 +5,8 @@
     <script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/popper.js@1.12.9/dist/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@4.0.0/dist/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+
     <div class="container">
-        
-        
         <div class="big-column">
 
             <div class="row big-column">
@@ -40,11 +39,29 @@
         <div class="column">
             <div class="row big-column">
                 <div class="small-row">
+                    <button onclick="Switch_player_turn()">Switch player turn</button>
+                </div>
+            </div>
+        </div>
+        <div class="column">
+            <div class="row big-column">
+                <div class="small-row">
                     <button onclick="resign_from_game()">Resign</button>
                 </div>
             </div>
         </div>
+    </div>
+    <div>
+        <div class="big-column">
 
+            <div class="row big-column">
+                <div class="small-row">
+                    <div class="row" id="question_card" >
+                        <!-- Images will be added dynamically using JavaScript -->
+                    </div>
+                </div>
+            </div>
+        </div>
     </div> 
 
     <!-- Modal -->
@@ -71,6 +88,44 @@
         </div>
       </div>
     </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="exampleModal_AS" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
+      <div class="modal-dialog" role="document">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="exampleModalLabel">Modal title</h5>
+            <button type="button" class="close" data-dismiss="modal" aria-label="Close" onclick="pick_card()">
+              <span aria-hidden="true">&times;</span>
+            </button>
+          </div>
+            <div class="modal-body" style="display: flex;">
+                
+                <button style="flex: 1;height: 100px;" onclick="handleClick('2')">2</button>
+                <button style="flex: 1;height: 100px;" onclick="handleClick('3')">3</button>
+                <button style="flex: 1;height: 100px;" onclick="handleClick('4')">4</button>
+                <button style="flex: 1;height: 100px;" onclick="handleClick('5')">5</button>
+                <button style="flex: 1;height: 100px;" onclick="handleClick('6')">6</button>
+                <button style="flex: 1;height: 100px;" onclick="handleClick('7')">7</button>
+                <button style="flex: 1;height: 100px;" onclick="handleClick('8')">8</button>
+                <button style="flex: 1;height: 100px;" onclick="handleClick('9')">9</button>
+                <button style="flex: 1;height: 100px;" onclick="handleClick('10')">10</button>
+                <button style="flex: 1;height: 100px;" onclick="handleClick('K')">K</button>
+                <button style="flex: 1;height: 100px;" onclick="handleClick('J')">J</button>
+                <button style="flex: 1;height: 100px;" onclick="handleClick('Q')">Q</button>
+                <button style="flex: 1;height: 100px;" onclick="handleClick('Joker')">Joker</button>
+
+            </div>
+
+
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary" data-dismiss="modal" onclick="counter_card()">Close</button>
+            <button type="button" class="btn btn-primary">Save changes</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- Modal -->
     <div class="modal fade" id="cardstopick" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel" aria-hidden="true">
       <div class="modal-dialog" role="document">
@@ -94,6 +149,7 @@
 
 
 
+
     <script type="text/javascript">
         const myturn={{ myside|safe }};
         //var links = {{ game_id|safe }};
@@ -102,38 +158,46 @@
         var opponent_cards={{ opponent_cards|safe }};
         console.log(typeof owner_cards);
         console.log(typeof opponent_cards);
-        var Last_played_Card={{ Last_played_Card|safe }};
-        console.log("Last played Card",Last_played_Card);
+        //try {
+        var Last_played_Card = {{ Last_played_Card|safe }};
+        if (Last_played_Card==='Empty'){
+            Last_played_Card=null
+            console.log(Last_played_Card);
+        } else {
+            // Function to create and append a single image element to a given row
+            function createImage(rowId, imageName) {
+                var row = document.getElementById(rowId);
+                row.innerHTML = ''; // Clear existing contents of the row
 
-        // Function to create and append a single image element to a given row
-        function createImage(rowId, imageName) {
-            var row = document.getElementById(rowId);
-            row.innerHTML = ''; // Clear existing contents of the row
+                var img = document.createElement("img");
+                img.src = "/static/img/" + imageName + ".png"; // Construct the image source URL
+                img.alt = imageName;
+                img.classList.add("image");
+                img.onclick = function () {
+                    //sendImageName(imageName);
+                };
+                row.appendChild(img);
 
-            var img = document.createElement("img");
-            img.src = "/static/img/" + imageName + ".png"; // Construct the image source URL
-            img.alt = imageName;
-            img.classList.add("image");
-            img.onclick = function () {
-                //sendImageName(imageName);
-            };
-            row.appendChild(img);
+                console.log('Image added to the row:', rowId);
+            }
 
-            console.log('Image added to the row:', rowId);
+            // Define the key and value to search for
+            var keyToMatch = Last_played_Card[0];
+            var valueToMatch = Last_played_Card[1];
+
+            // Call the function to create and append the image for the last played card
+            createImage("Card-played", keyToMatch);
         }
+            
+        //} catch (error) {
+        //    console.error('An error occurred:', error);
+        //}
 
-        
-        // Define the key and value to search for
-        var keyToMatch = Last_played_Card[0];
-        var valueToMatch = Last_played_Card[1];
-
-        // Call the function to create and append the image for the last played card
-        createImage("Card-played", keyToMatch);
 
         var Cards_deck_play={{ Cards_deck_play|safe }};
         var c_player={{c_player|safe}};
  
-        console.log("links:", links);
+
         console.log("owner_cards:", owner_cards);
         console.log("opponent_cards:", opponent_cards);
         console.log("Cards_deck_play:", Cards_deck_play);

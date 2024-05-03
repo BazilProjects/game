@@ -3,7 +3,7 @@ from .models import *
 from .forms import GameForm
 from django.http import HttpResponse
 from django.urls import reverse_lazy
-
+import json
 def games(request):
     if request.user.is_anonymous:
         return redirect(reverse_lazy('admin:index'))
@@ -21,7 +21,10 @@ def play_game(request,id):
         myside=1
     else:
         myside=-1
-    context={'myside':myside,"owner_cards":game.owner_cards,"opponent_cards":game.opponent_cards,"Cards_deck_play":game.Cards_deck_play,"c_player":game.c_player,"Last_played_Card":game.Last_played}
+    Last_played_Card=game.Last_played
+    if Last_played_Card=="":
+        Last_played_Card=json.dumps('Empty')
+    context={'myside':myside,"owner_cards":game.owner_cards,"opponent_cards":game.opponent_cards,"Cards_deck_play":game.Cards_deck_play,"c_player":game.c_player,"Last_played_Card":Last_played_Card}
     return render(request, 'play.html',context)
 
 def create_game(request):
