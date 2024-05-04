@@ -40,8 +40,11 @@ function add_picked_card(receive,picked) {
     console.log(receive);
     return receive
 }
+
+
 // Function to handle picking a card
 function try_pick_card() {
+    console.log(myturn,c_player)
     if (myturn===c_player){
         const data = {
             command: "pick_cards_during_play",
@@ -186,8 +189,10 @@ socket.onmessage = function (message) {
 
         Last_played_Card=data.Last_played_Card;
         // Get the image name for the last played card
-
-        c_player=data.c_player
+        if ('c_player' in data){
+            c_player=data.c_player
+        }
+        
 
         var imageName = Last_played_Card[0];
         //print(data)
@@ -365,6 +370,7 @@ socket.onmessage = function (message) {
                                           console.log("Not Playable")
                                         }
                                     } else {
+                                        console.log(myturn,c_player)
                                         console.log("Not Your Turn")
                                     }
                                 } else if (side=='opponent' && myturn==-1){

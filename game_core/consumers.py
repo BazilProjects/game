@@ -763,8 +763,11 @@ class GameConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
+        symbol,Last_played_Card=await self.get_running_credentials()
         await self.send(text_data=json.dumps({
             "command":"join",
+            "Last_played_Card":Last_played_Card,
+            "symbol":symbol,
         }))
 
     async def opp_offline(self):
@@ -820,6 +823,10 @@ class GameConsumer(AsyncWebsocketConsumer):
         game.winner = result
         game.status = 3
         game.save()
+    @database_sync_to_async
+    def get_running_credentials(self):
+        game = Game.objects.all().filter(id=self.game_id)[0]
+        return game.symbol,game.Last_played
 
     @database_sync_to_async
     def calculate_card_values(self):

@@ -19,6 +19,7 @@ class Game(models.Model):
     opponent_cards=models.CharField(max_length=2000,blank=True)
     Cards_deck_play=models.CharField(max_length=2000,blank=True)
     Last_played=models.CharField(max_length=2000,blank=True)
+    symbol=models.CharField(max_length=2000,blank=True)
 
     owner_pick_card_turn=models.BooleanField(default=True)
     opponent_pick_card_turn=models.BooleanField(default=True)

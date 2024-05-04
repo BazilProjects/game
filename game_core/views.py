@@ -24,7 +24,8 @@ def play_game(request,id):
     Last_played_Card=game.Last_played
     if Last_played_Card=="":
         Last_played_Card=json.dumps('Empty')
-    context={'myside':myside,"owner_cards":game.owner_cards,"opponent_cards":game.opponent_cards,"Cards_deck_play":game.Cards_deck_play,"c_player":game.c_player,"Last_played_Card":Last_played_Card}
+    symbol=game.symbol
+    context={'symbol':symbol,'myside':myside,"owner_cards":game.owner_cards,"opponent_cards":game.opponent_cards,"Cards_deck_play":game.Cards_deck_play,"c_player":game.c_player,"Last_played_Card":Last_played_Card}
     return render(request, 'play.html',context)
 
 def create_game(request):
