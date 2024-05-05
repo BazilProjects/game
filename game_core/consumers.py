@@ -180,9 +180,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         if 'pick_cards_during_play' in content.values():
             print("entered")
             await self.pick_cards_during_play_message()
-        elif command == "End_game":
-            result=await self.calculate_card_values()
-            await self.game_over(result)
+        
         elif command == "resign":
             sub_command=int(content['sub_command'])
             owner,opponent=await self.get_owner_opponent_usernames()
@@ -431,6 +429,7 @@ class GameConsumer(AsyncWebsocketConsumer):
     
     async def card_played(self, content):
         print('Card played entered')
+        
         if 'Last_played_Card' in content:
             Last_played_Card=content['Last_played_Card']
             print(Last_played_Card)
@@ -454,7 +453,10 @@ class GameConsumer(AsyncWebsocketConsumer):
                     'message': message
                 }
             )
-
+        if Last_played_Card[1] == "End_game":
+            result=await self.calculate_card_values()
+            await self.game_over(result)
+            
         if Last_played_Card[1]=="Question":
             c_player=await self.check_c_player()
             
@@ -626,7 +628,7 @@ class GameConsumer(AsyncWebsocketConsumer):
             else:
                 print('HALLALLUHAH Pick_3')
                 opponent_cards,owner_cards=await self.current_each_player_cards(Last_played_Card)
-                c_player=await self.check_c_player()
+                c_player=await self.turn_management_system()
                 print('HALLALLUHAHjames Pick_3')
                 message = {
                 
@@ -763,11 +765,13 @@ class GameConsumer(AsyncWebsocketConsumer):
             self.room_group_name,
             self.channel_name
         )
-        symbol,Last_played_Card=await self.get_running_credentials()
+        symbol,Last_played_Card,owner_pick_card_turn,opponent_pick_card_turn=await self.get_running_credentials()
         await self.send(text_data=json.dumps({
             "command":"join",
             "Last_played_Card":Last_played_Card,
             "symbol":symbol,
+            "owner_pick_card_turn":owner_pick_card_turn,
+            "opponent_pick_card_turn":opponent_pick_card_turn,
         }))
 
     async def opp_offline(self):
@@ -826,7 +830,7 @@ class GameConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def get_running_credentials(self):
         game = Game.objects.all().filter(id=self.game_id)[0]
-        return game.symbol,game.Last_played
+        return game.symbol,game.Last_played,game.owner_pick_card_turn,game.opponent_pick_card_turn
 
     @database_sync_to_async
     def calculate_card_values(self):
@@ -928,7 +932,7 @@ class GameConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def check_c_player(self):
         game = Game.objects.all().filter(id=self.game_id)[0]
-        c_player = game.c_player 
+        c_player = int(game.c_player) 
         return c_player
 
     @database_sync_to_async

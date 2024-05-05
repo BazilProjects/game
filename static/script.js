@@ -26,8 +26,8 @@ if (typeof Last_played_Card !== 'undefined') {
 
 var symbol=null
 
-var owner_pick_card_turn=null
-var opponent_pick_card_turn=null
+var owner_pick_card_turn
+var opponent_pick_card_turn
 
 console.log("Connecting to " + ws_path);
 var socket = new ReconnectingWebSocket(ws_path);
@@ -56,8 +56,12 @@ function try_pick_card() {
 }
 // Function to handle picking a card
 function Switch_player_turn() {
+    console.log('Switch_player_turn')
+    console.log(myturn,c_player)
+    console.log(typeof myturn, typeof c_player)
+    console.log(owner_pick_card_turn,opponent_pick_card_turn)
     if (myturn===c_player){
-        if ((myturn===1 && owner_pick_card_turn===false) ||(myturn===-1 && opponent_pick_card_turn===false)) {
+        if ((myturn==1 && owner_pick_card_turn===false) ||(myturn==-1 && opponent_pick_card_turn===false)) {
             const data = {
                 command:"card-played",
                 sub_command: "Switch_player_turn"
@@ -158,8 +162,9 @@ socket.onmessage = function (message) {
         up_date_cards(owner_cards,opponent_cards)
     }
     if (data.command==="pick_cards_during_play_not_allowed") {
-        console.log('Pick card not allowed')
+        
         document.getElementById('pick_card_not_allowed').style.display = 'block';
+        console.log('Pick card not allowed');
     }
     if ("symbol" in data) {
         symbol=data.symbol
@@ -186,7 +191,10 @@ socket.onmessage = function (message) {
             console.log("Modal is already hidden");
             // You can also choose to do nothing or perform some other action here
         }
-        update_asked_question(data);
+        if ('Last_played_Card' in data){
+            Last_played_Card=data.Last_played_Card;
+            update_asked_question(data);
+            update_last_played_card(data);
 
         }
     if (data.command==="Switch_player_turn"){
@@ -694,6 +702,21 @@ function game_rules(Last_played_Card, Next_played_Card) {
 
     if (Last_played_Card!==null && symbol !==null){
         //diamond
+        if (Last_played_Card[0]==="AS"){
+            if (symbol.includes(Next_played_Card[0])) {
+                Last_played_Card = Next_played_Card;
+                const data = {
+                    command: "card-played",
+                    sub_command:"",
+                    Last_played_Card: Last_played_Card
+                };
+                socket.send(JSON.stringify(data));
+                console.log('Sent');
+                symbol=null
+                return true;
+            }
+            
+        }
         if (symbol==='diamond' && (['D'].includes(Next_played_Card[0]) || Next_played_Card[0] === 'RED_Joker')) {
             Last_played_Card = Next_played_Card;
 
@@ -805,7 +828,7 @@ function game_rules(Last_played_Card, Next_played_Card) {
             return true;
         }
     }
-    else if (Last_played_Card === null) {
+    if (Last_played_Card === null) {
         console.log(Last_played_Card,'Last_played_Card')
 
         // Define the letters to check for
@@ -909,7 +932,8 @@ function game_rules(Last_played_Card, Next_played_Card) {
                 return true;
             }
         }
-    } else {
+    }
+    if(Last_played_Card!==null){
         // Last_played_Card is not null
         console.log("Last_played_Card is not null");
         console.log(Last_played_Card,Next_played_Card)
@@ -1308,6 +1332,7 @@ function game_rules(Last_played_Card, Next_played_Card) {
 
         // Diamond
         if (Last_played_Card[0].includes('D') ) {//&& Last_played_Card[1] === 'Ignore') {
+            console.log('diamond',Last_played_Card)
             const lettersToCheck = ['4', '5', '6', '7','9', '10', 'Q', 'K'];
 
             // Check if any of the letters appear in the string
@@ -1981,10 +2006,11 @@ function game_rules(Last_played_Card, Next_played_Card) {
 
             }
         }
-    }
-    
+    }else{
     console.log('None of the above conditions met, return false.');
-    return false;
+    console.log(Next_played_Card)
+    console.log(Last_played_Card)
+    return false;}
 };
 
 

@@ -15,9 +15,19 @@
                 <td>{{ game.owner.username }}</td>
                 <td>{{ game.opponent.username}}</td>
                 <td>
-                    <a href="{% url 'play_game' id=game.id %}">
-                        <button>Play</button>
-                    </a>
+                    {% if game.status == 1 %}
+                        <strong>Game Status:</strong> Game Created. Waiting for opponent
+                        <a href="{% url 'play_game' id=game.id %}">
+                            <button>Play</button>
+                        </a>
+                    {% elif game.status == 2 %}
+                        <strong>Game Status:</strong> Game Started
+                        <a href="{% url 'play_game' id=game.id %}">
+                            <button>Continue</button>
+                        </a>
+                    {% elif game.status == 3 %}
+                        <strong>Game Status:</strong> Game Ended
+                    {% endif %}
                 </td>
             </tr>
         {% empty %}
