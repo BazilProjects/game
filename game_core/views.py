@@ -4,6 +4,9 @@ from .forms import GameForm
 from django.http import HttpResponse
 from django.urls import reverse_lazy
 import json
+from django.contrib import messages
+
+
 def games(request):
     if request.user.is_anonymous:
         return redirect(reverse_lazy('admin:index'))
@@ -36,7 +39,9 @@ def create_game(request):
             game = form.save(commit=False)
             game.owner = request.user  # Assign the current user as the owner
             game.save()
-            return HttpResponse("Game created successfully")
+            messages.success(request, 'New Game Created Successfully.')
+            return redirect(reverse_lazy('index'))
     else:
-        form = GameForm()
+        #form = GameForm()
+        form = GameForm(authenticated_user=request.user)
     return render(request, 'create_game.html', {'form': form})

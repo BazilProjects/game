@@ -234,7 +234,7 @@ class GameConsumer(AsyncWebsocketConsumer):
         owner=game.owner.username
         return owner,opponent
     async def ask_played(self, content):
-        c_player=await self.check_c_player()#turn_management_system()
+        c_player=await self.turn_management_system()
         message = {
             "command":"ask-played",
             "symbol":content['symbol'],

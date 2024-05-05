@@ -28,6 +28,7 @@ DEBUG = True
 ALLOWED_HOSTS = ['game-k0m7.onrender.com',"*"]
 
 
+
 # Application definition
 
 INSTALLED_APPS = [

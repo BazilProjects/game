@@ -146,6 +146,12 @@ socket.onmessage = function (message) {
         // Call the function to create images for the lower row
         createImages("lower-row", lowerRowImages);
     }
+    if (('owner_cards' in data) || ('opponent_cards' in data)){
+        console.log('***************************************************')
+        console.log(typeof data.owner_cards)
+        console.log(typeof data.opponent)
+        console.log('***************************************************')
+    }
     if (data.command==="pick_cards_during_play") {
         owner_cards=data.owner_cards
         opponent_cards=data.opponent_cards
@@ -153,6 +159,7 @@ socket.onmessage = function (message) {
     }
     if (data.command==="pick_cards_during_play_not_allowed") {
         console.log('Pick card not allowed')
+        document.getElementById('pick_card_not_allowed').style.display = 'block';
     }
     if ("symbol" in data) {
         symbol=data.symbol
@@ -165,7 +172,7 @@ socket.onmessage = function (message) {
             // Find the button element by its class name
             var modal = document.getElementById("exampleModal");
 
-        } else {
+        } else { 
 
             // Find the button element by its class name
             var modal = document.getElementById("exampleModal");
@@ -184,13 +191,29 @@ socket.onmessage = function (message) {
         }
     if (data.command==="Switch_player_turn"){
         c_player=data.c_player
+        if (myturn===c_player){
+            document.getElementById('alertContainerOpponent').style.display = 'none';
+            document.getElementById('alertContainerYour').style.display = 'block';
+            
+        }else{
+            document.getElementById('alertContainerYour').style.display = 'none';
+            document.getElementById('alertContainerOpponent').style.display = 'block';
+        }
     }
     if (data.command === "card-played") {
 
         Last_played_Card=data.Last_played_Card;
         // Get the image name for the last played card
-        if ('c_player' in data){
+        if ('c_player' in data && !("Switch_player_turn" in data) ){
             c_player=data.c_player
+            if (myturn===c_player){
+                document.getElementById('alertContainerOpponent').style.display = 'none';
+                document.getElementById('alertContainerYour').style.display = 'block';
+                
+            }else{
+                document.getElementById('alertContainerYour').style.display = 'none';
+                document.getElementById('alertContainerOpponent').style.display = 'block';
+            }
         }
         
 
@@ -199,11 +222,98 @@ socket.onmessage = function (message) {
         //var imageName = data["Last_played_Card"][0];
 
         if (Last_played_Card[0]==='RED_Joker'){
-            console.log("PICK 5 red")
+            console.log("PICK 3")
+            console.log("-"*50)
+            console.log(data)
+            counter_possible=data.try_to_counter
+            Last_played_Card=data.Last_played_Card
+            if (counter_possible==true){
+                console.log(myturn,c_player)
+                if (myturn!=c_player){
+                    cards_for_that=data.possible_counter
+                    // Call the function to attach images to the modal
+                    attachImagesToModal(cards_for_that);
+                    
+                    // Find the button element by its class name
+                    var modal = document.getElementById("cardstopick");
+
+                    // Show the modal
+                    $(modal).modal("show");
+                    Update_images(data,imageName)
+                }else {
+                    update_last_played_card(data)
+                }
+            } else {
+                // Find the button element by its class name
+                var modal = document.getElementById("cardstopick");
+
+                
+                // Check if the modal is currently visible
+                if ($(modal).is(":visible")) {
+                    // Close the modal if it's visible
+                    $(modal).modal("hide");
+                } else {
+                    // If the modal is not visible, do something else (e.g., 'pass')
+                    console.log("Modal is already hidden");
+                    // You can also choose to do nothing or perform some other action here
+                }
+
+                owner_cards=data.owner_cards
+                opponent_cards=data.opponent_cards
+                console.log('owner_cards:',owner_cards)
+                console.log('opponent_cards',opponent_cards)
+
+                up_date_cards(owner_cards,opponent_cards)
+                update_last_played_card(data)
+            }
         }
         else if (Last_played_Card[0]==='Black_Joker') {
-            console.log("PICK 5 black")
+            console.log("PICK 5")
+            console.log("-"*50)
+            console.log(data)
+            counter_possible=data.try_to_counter
+            Last_played_Card=data.Last_played_Card
+            if (counter_possible==true){
+                console.log(myturn,c_player)
+                if (myturn!=c_player){
+                    cards_for_that=data.possible_counter
+                    // Call the function to attach images to the modal
+                    attachImagesToModal(cards_for_that);
+                    
+                    // Find the button element by its class name
+                    var modal = document.getElementById("cardstopick");
+
+                    // Show the modal
+                    $(modal).modal("show");
+                    Update_images(data,imageName)
+                }else {
+                    update_last_played_card(data)
+                }
+            } else {
+                // Find the button element by its class name
+                var modal = document.getElementById("cardstopick");
+
+                
+                // Check if the modal is currently visible
+                if ($(modal).is(":visible")) {
+                    // Close the modal if it's visible
+                    $(modal).modal("hide");
+                } else {
+                    // If the modal is not visible, do something else (e.g., 'pass')
+                    console.log("Modal is already hidden");
+                    // You can also choose to do nothing or perform some other action here
+                }
+
+                owner_cards=data.owner_cards
+                opponent_cards=data.opponent_cards
+                console.log('owner_cards:',owner_cards)
+                console.log('opponent_cards',opponent_cards)
+
+                up_date_cards(owner_cards,opponent_cards)
+                update_last_played_card(data)
+            }
         }
+        
         else if (Last_played_Card[1]==='Pick_2') {
             counter_possible=data.try_to_counter
             Last_played_Card=data.Last_played_Card
@@ -385,6 +495,7 @@ socket.onmessage = function (message) {
                                           console.log("Not Playable")
                                         }
                                     } else {
+                                        console.log(myturn,c_player)
                                         console.log("Not Your Turn")
                                     }
                                 }
@@ -457,6 +568,7 @@ socket.onmessage = function (message) {
                                           console.log("Not Playable")
                                         }
                                     } else {
+                                        console.log(myturn,c_player)
                                         console.log("Not Your Turn")
                                     }
                                 } else if (side=='opponent' && myturn==-1){
@@ -471,6 +583,7 @@ socket.onmessage = function (message) {
                                           console.log("Not Playable")
                                         }
                                     } else {
+                                        console.log(myturn,c_player)
                                         console.log("Not Your Turn")
                                     }
                                 }
@@ -543,6 +656,7 @@ window.onload = function() {
                           console.log("Not Playable")
                         }
                     } else {
+                        console.log(myturn,c_player)
                         console.log("Not Your Turn")
                     }
                 } else if (side=='opponent' && myturn==-1){
@@ -557,6 +671,7 @@ window.onload = function() {
                           console.log("Not Playable")
                         }
                     } else {
+                        console.log(myturn,c_player)
                         console.log("Not Your Turn")
                     }
                 }
@@ -1946,6 +2061,7 @@ function Update_images(data,imageName) {
                                   console.log("Not Playable")
                                 }
                             } else {
+                                console.log(myturn,c_player)
                                 console.log("Not Your Turn")
                             }
                         } else if (side=='opponent' && myturn==-1){
@@ -1960,6 +2076,7 @@ function Update_images(data,imageName) {
                                   console.log("Not Playable")
                                 }
                             } else {
+                                console.log(myturn,c_player)
                                 console.log("Not Your Turn")
                             }
                         }
@@ -2031,6 +2148,7 @@ function Update_images(data,imageName) {
                                   console.log("Not Playable")
                                 }
                             } else {
+                                console.log(myturn,c_player)
                                 console.log("Not Your Turn")
                             }
                         } else if (side=='opponent' && myturn==-1){
@@ -2045,6 +2163,7 @@ function Update_images(data,imageName) {
                                   console.log("Not Playable")
                                 }
                             } else {
+                                console.log(myturn,c_player)
                                 console.log("Not Your Turn")
                             }
                         }
@@ -2194,6 +2313,7 @@ function up_date_cards(owner_cardss,opponent_cardss) {
                           console.log("Not Playable")
                         }
                     } else {
+                        console.log(myturn,c_player)
                         console.log("Not Your Turn")
                     }
                 } else if (side=='opponent' && myturn==-1){
@@ -2208,6 +2328,7 @@ function up_date_cards(owner_cardss,opponent_cardss) {
                           console.log("Not Playable")
                         }
                     } else {
+                        console.log(myturn,c_player)
                         console.log("Not Your Turn")
                     }
                 }
@@ -2357,6 +2478,7 @@ function update_last_played_card(data) {
                                   console.log("Not Playable")
                                 }
                             } else {
+                                console.log(myturn,c_player)
                                 console.log("Not Your Turn")
                             }
                         } else if (side=='opponent' && myturn==-1){
@@ -2371,6 +2493,7 @@ function update_last_played_card(data) {
                                   console.log("Not Playable")
                                 }
                             } else {
+                                console.log(myturn,c_player)
                                 console.log("Not Your Turn")
                             }
                         }
@@ -2443,6 +2566,7 @@ function update_last_played_card(data) {
                                   console.log("Not Playable")
                                 }
                             } else {
+                                console.log(myturn,c_player)
                                 console.log("Not Your Turn")
                             }
                         } else if (side=='opponent' && myturn==-1){
@@ -2457,6 +2581,7 @@ function update_last_played_card(data) {
                                   console.log("Not Playable")
                                 }
                             } else {
+                                console.log(myturn,c_player)
                                 console.log("Not Your Turn")
                             }
                         }

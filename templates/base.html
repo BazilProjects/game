@@ -13,11 +13,14 @@
 <body>
     <nav>
         <ul>
-            <li><a href="">Games</a></li>
+            <li><a href="/">Games</a></li>
             <li><a href="/create">Create New Game</a></li>
             <li><a href="#"></a></li>
         </ul>
     </nav>
+    <!-- Include the messages display -->
+    {% include "messages.html" %}
+
     <br>
 {% block body %}
 {% endblock %}
